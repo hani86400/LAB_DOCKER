@@ -1,0 +1,62 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+version: '3'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+networks:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  hani_nw_200:
+    external: true
+    
+# Remark the (hani_nw_200) was create by command :   
+#T_NETWORK='hani_nw_200';docker network rm $T_NETWORK ;docker network create --subnet=192.168.200.0/24 $T_NETWORK ; docker network ls 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+services:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#######################################################################  
+  ser_mysql:
+#######################################################################  
+    image: mysql:8.0.33-oracle@sha256:a43f6e7e7f3a5e5b90f857fbed4e3103ece771b19f0f75880f767cf66bbb6577
+    container_name: mysql1
+    hostname: mysql1
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.151 
+    environment:
+      - MYSQL_ROOT_PASSWORD=mypass123
+      - qMYSQL_USER=user3"
+      - qMYSQL_PASSWORD=admin3"
+      - qMYSQL_DATABASE=db3      
+    volumes:
+      - /volumes/mysql:/var/lib/mysql
+#######################################################################
+
+
+#######################################################################
+  ser_pma:
+#######################################################################
+    image: phpmyadmin:5.2.1-apache@sha256:0218abd1ba80544122cb8311f4ca1bc49e47955b041350625995ec7a9fb3d290
+    container_name: phpmyadmin1
+    hostname: phpmyadmin1
+    restart: unless-stopped
+    ports:
+      - 8033:80
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.157
+    environment:
+      - PMA_HOST=mysql1
+      - ADMINER_DEFAULT_SERVER=mysql1
+    depends_on:
+      - ser_mysql
+    volumes:
+      - /volumes/php:/var/www/html/php 
+#######################################################################
+
+ 
