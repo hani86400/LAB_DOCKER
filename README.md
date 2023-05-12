@@ -13,7 +13,9 @@ or
 docker run -p 8888:8888 --user root -v /volumes/jupyter_notebook:/home/jovyan  -e GRANT_SUDO=yes                          jupyter/minimal-notebook:2023-05-08
 ```
 <br/>
+
 Add user to docker group to avoid using sudo in docker command
+
 ```
 sudo usermod -aG docker ${USER} # add user to docker group to avoid using sudo in docker command
 ```
