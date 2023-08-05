@@ -1,0 +1,52 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+version: '3'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+networks:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  hani_nw_200:
+    external: true
+    
+# Remark the (hani_nw_200) was create by command :   
+#T_NETWORK='hani_nw_200';docker network rm $T_NETWORK ;docker network create --subnet=192.168.200.0/24 $T_NETWORK ; docker network ls 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+services:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#######################################################################  
+  ser_redis:
+#######################################################################  
+    image: redis:7.0.11-bullseye@sha256:ea30bef6a1424d032295b90db20a869fc8db76331091543b7a80175cede7d887
+    container_name: redis1
+    hostname: redis1
+    ports: [6379:6379] 
+#   command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81    
+    command: redis-server --save 20 1 --loglevel warning 
+    volumes: 
+      - /volumes/redis:/data      
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.181
+#######################################################################
+ 
+#######################################################################
+  ser_rediscommander:
+#######################################################################
+    image: rediscommander/redis-commander:latest
+    container_name: rediscommander1
+    hostname: rediscommander1
+    restart: always # fixes Error when server is not ready when client starts
+    ports:
+      - 8379:8081
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.187
+    environment:
+      - REDIS_HOSTS=local:192.168.200.181:6379
+    depends_on:
+      - ser_redis
+#######################################################################

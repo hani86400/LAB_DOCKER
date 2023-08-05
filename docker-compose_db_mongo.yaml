@@ -1,0 +1,70 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+version: '3'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+networks:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  hani_nw_200:
+    external: true
+    
+# Remark the (hani_nw_200) was create by command :   
+#T_NETWORK='hani_nw_200';docker network rm $T_NETWORK ;docker network create --subnet=192.168.200.0/24 $T_NETWORK ; docker network ls 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#volumes:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# mongo-data:
+#   driver: local
+    
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+services:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#######################################################################  
+  ser_mongodb:
+#######################################################################  
+    image: mongo
+#   image: ${docker-registry}/my-app:1.0    
+    container_name: mongodb1
+    hostname: mongodb1
+    ports: [27017:27017]
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.171
+#   build: ./server
+#   env_file: .env
+#command: ./wait-for.sh mongo:27017 -- /app/node_modules/.bin/nodemon app.js      
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - qMONGO_INITDB_DATABASE=test
+      - qMONGO_USERNAME=$MONGO_USERNAME
+      - qMONGO_PASSWORD=$MONGO_PASSWORD
+      - qMONGO_HOSTNAME=mongo
+      - qMONGO_PORT=$MONGO_PORT
+      - qMONGO_DB=$MONGO_DB 
+    volumes:
+      - /volumes/mongo:/data/db
+#######################################################################
+ 
+#######################################################################
+  ser_mongoexpress1:
+#######################################################################
+    image: mongo-express:1.0.0-alpha.4@sha256:dcfcf89bf91238ff129469a5a94523b3025913dcc41597d72d4d5f4a0339cc7d
+    container_name: mongoexpress1
+    restart: always # fixes MongoNetworkError when mongodb is not ready when mongo-express starts
+    ports:
+      - 8101:8081
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.177
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=mongodb1
+    depends_on:
+      - ser_mongodb
+#######################################################################
