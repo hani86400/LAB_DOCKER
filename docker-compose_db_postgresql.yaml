@@ -1,0 +1,68 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+version: '3'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+networks:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  hani_nw_200:
+    external: true
+    
+# Remark the (hani_nw_200) was create by command :   
+#T_NETWORK='hani_nw_200';docker network rm $T_NETWORK ;docker network create --subnet=192.168.200.0/24 $T_NETWORK ; docker network ls 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+services:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#######################################################################  
+  ser_postgres:
+#######################################################################  
+    image: postgres:15.2-alpine3.17@sha256:d9c304353c031b21e9a7e33dc4781e272a9fa802a2ab9703fe4199d72ba1422c
+    container_name: postgres1
+    hostname: postgres1
+    ports:
+      - 5432:5432     
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.161 
+    environment:
+      - POSTGRES_USER=hani
+      - POSTGRES_PASSWORD=hani
+    volumes:
+      - /volumes/postgres:/var/lib/postgresql/data
+#######################################################################
+
+
+#######################################################################
+  ser_pgadmin:
+#######################################################################
+    image: dpage/pgadmin4:7.1@sha256:c4f63d42fb10e31a797ea1bfde15cb6e601372b2c39da7429294bed5e70c84f8
+    container_name: pgadmin1
+    hostname: pgadmin1
+    restart: unless-stopped
+    ports:
+      - 8432:80 
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.167
+    environment:
+      - PMA_HOST=mysql1
+      - PGADMIN_DEFAULT_EMAIL=hani@hani.com
+      - PGADMIN_DEFAULT_PASSWORD=hani
+      - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION0000=True
+      - PGADMIN_CONFIG_LOGIN_BANNER="hani@hani.com hani"
+      - PGADMIN_CONFIG_CONSOLE_LOG_LEVEL000=10
+      - qPGADMIN_LISTEN_ADDRESS=192.168.200.161 
+      - qPGADMIN_LISTEN_PORT=5432  
+    volumes:
+      - /volumes/pgadmin:/var/lib/pgadmin
+    depends_on:
+      - ser_postgres
+#######################################################################
+
+ 

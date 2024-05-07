@@ -1,0 +1,60 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+version: '3'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+networks:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  hani_nw_200:
+    external: true
+    
+# Remark the (hani_nw_200) was create by command :   
+#T_NETWORK='hani_nw_200';docker network rm $T_NETWORK ;docker network create --subnet=192.168.200.0/24 $T_NETWORK ; docker network ls 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+services:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#######################################################################  
+  ser_gentoo:
+#######################################################################  
+    image: gentoo/stage3:20240408@sha256:1c20c34cc328d0cf4c247da28e30879f09afb5420ab98b0eae97ffb5b9e9af07    
+    container_name: gentoo1
+    hostname: gentoo
+#   user: "5557:5557"    
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.145 
+    ports:
+      - 22:22
+#   entrypoint: tail -f /dev/null
+#   command: ssh-add 2>1 > /dev/null ; rc-service sshd stop  ; rc-service sshd start ; rc-service sshd status ; tail -f /dev/null
+    command: >
+        bash -c "
+        echo 'dc_gentoo_down ; dc_gentoo_up' ;
+        echo 'root login: gentoo1_exec_bash' ;
+        echo 'lfs  login: sshlfs' ;
+        rm /var/run/faillock/lfs
+        ssh-add 2>1 > /dev/null ;
+        rc-service sshd stop  ; 
+        rc-service sshd start ; 
+        rc-service sshd status ;
+        tail -f /dev/null            "
+    environment:
+      - MYSQL_ROOT_PASSWORD=mypass123
+    volumes:
+      - /volumes/gentoo/root:/root
+      - /volumes/gentoo/run/openrc:/run/openrc
+      - /volumes/gentoo/etc/passwd:/etc/passwd
+      - /volumes/gentoo/etc/group:/etc/group
+      - /volumes/gentoo/etc/shadow:/etc/shadow
+      - /mnt/lfs:/mnt/lfs      
+      - /home/lfs:/home/lfs      
+      - /tmp/alfs:/tmp/alfs
+#######################################################################
+
+

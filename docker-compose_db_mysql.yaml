@@ -1,0 +1,78 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+version: '3'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+networks:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  hani_nw_200:
+    external: true
+    
+# Remark the (hani_nw_200) was create by command :   
+#T_NETWORK='hani_nw_200';docker network rm $T_NETWORK ;docker network create --subnet=192.168.200.0/24 $T_NETWORK ; docker network ls 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+services:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#######################################################################  
+  ser_mysql:
+#######################################################################  
+    image: mysql:8.0.33-oracle@sha256:a43f6e7e7f3a5e5b90f857fbed4e3103ece771b19f0f75880f767cf66bbb6577
+    container_name: mysql1
+    hostname: mysql1
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.151 
+    ports:
+      - 3306:3306
+#   command: sh -c 'mysql -u root -p mypass123 -e "update user set authentication_string=password(''), plugin='mysql_native_password' where user='root';" '   
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=mypass123
+      - qMYSQL_USER=user3"
+      - qMYSQL_PASSWORD=admin3"
+      - qMYSQL_DATABASE=db3      
+    volumes:
+      - /volumes/mysql/DATA:/var/lib/mysql
+      - /volumes/mysql/root:/root
+#     - /volumes/mysql/my.cnf:/etc/my.cnf
+#######################################################################
+
+
+#######################################################################
+  ser_pma_ssh:
+#######################################################################
+#   ORIG_IMAGE
+#   image: phpmyadmin:5.2.1-apache@sha256:0218abd1ba80544122cb8311f4ca1bc49e47955b041350625995ec7a9fb3d290
+    image: pma_ssh:latest
+    container_name: phpmyadmin1
+    hostname: phpmyadmin1
+#   restart: unless-stopped
+    command: >
+        bash -c "
+        echo root:123 | chpasswd &
+        service ssh start &
+        tail -f /dev/null      "
+    ports:
+      - "22080:20"
+      - "8033:80"
+    networks:
+      hani_nw_200:
+        ipv4_address: 192.168.200.157
+    environment:
+#     - PMA_HOST=18.207.225.67
+      - PMA_HOST=192.168.200.151      
+ #     - ADMINER_DEFAULT_SERVER=mysql1
+    depends_on:
+      - ser_mysql
+    volumes:
+      - /volumes/php:/var/www/html/php
+      - /volumes/apache2/etc/apache2/sites-available:/etc/apache2/sites-available
+#######################################################################
+
+ 

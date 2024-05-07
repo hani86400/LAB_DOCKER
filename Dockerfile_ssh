@@ -1,0 +1,31 @@
+FROM ubuntu:latest
+#FROM busybox
+
+RUN apt update
+
+RUN apt install  openssh-server sudo curl iproute2 iputils-ping ufw -y
+
+RUN useradd -rm -d /home/u5555 -s /bin/bash -g root -G sudo -u 1000 u5555 
+
+RUN usermod -aG sudo u5555
+
+RUN echo 'u5555:123' | chpasswd
+ 
+RUN echo 'u5555 ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/u5555_CONF 
+
+RUN mkdir -p /home/u5555/.ssh 
+
+RUN echo 'PUBLIC_KEY_VALUE' >> /home/u5555/.ssh/authorized_keys
+
+RUN chown -R u5555 /home/u5555/.ssh
+
+RUN chmod 700  /home/u5555/.ssh
+
+RUN chmod 400  /home/u5555/.ssh/authorized_keys
+
+RUN service ssh start
+
+#EXPOSE 22
+
+CMD ["/usr/sbin/sshd","-D"]
+#CMD ["/bin/sh",""]
